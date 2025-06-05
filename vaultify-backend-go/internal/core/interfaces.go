@@ -80,3 +80,10 @@ type SecretRepository interface {
 // 	Create(ctx context.Context, logEntry models.AuditLog) error
 // }
 // The AuditService will now expect a db.AuditRepository.
+
+// BillingService defines the interface for billing and subscription management.
+type BillingService interface {
+	CreateCheckoutSession(ctx context.Context, userID, planID, priceID string) (string, error) // Returns Stripe session ID
+	CreatePortalSession(ctx context.Context, userID string) (string, error)                   // Returns Stripe portal URL
+	HandleStripeWebhook(ctx context.Context, signature string, payload []byte) error
+}

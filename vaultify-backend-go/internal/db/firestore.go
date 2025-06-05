@@ -8,8 +8,8 @@ import (
 	"os" // For checking env var like GOOGLE_APPLICATION_CREDENTIALS directly if needed, though config is preferred
 
 	firebase "firebase.google.com/go/v4"
-	"firebase.google.com/go/v4/auth"
-	"firebase.google.com/go/v4/firestore"
+         "firebase.google.com/go/v4/auth"
+         "cloud.google.com/go/firestore" // Correct import for the Firestore client type
 	"google.golang.org/api/option"
 
 	"vaultify-backend-go/internal/config" // To access config for Firebase Project ID, credentials
