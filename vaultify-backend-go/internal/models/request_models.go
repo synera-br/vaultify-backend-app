@@ -3,8 +3,8 @@ package models
 // CreateVaultRequest represents the request body for creating a new vault.
 type CreateVaultRequest struct {
 	Name        string   `json:"name" binding:"required"`
-	Description string   `json:"description,omitempty"`
-	Tags        []string `json:"tags,omitempty"`
+	Description string   `json:"description,omitempty"` // Optional
+	Tags        []string `json:"tags,omitempty"`        // Optional
 }
 
 // UpdateVaultRequest represents the request body for updating an existing vault.
@@ -17,16 +17,16 @@ type UpdateVaultRequest struct {
 
 // ShareVaultRequest represents the request body for sharing a vault.
 type ShareVaultRequest struct {
-	UserIDs         []string `json:"userIds" binding:"required"`         // User IDs to share with
-	PermissionLevel string   `json:"permissionLevel" binding:"required"` // e.g., "read", "write"
+	UserIDs         []string `json:"userIds" binding:"required,gt=0,dive,required"` // UserIDs array must be present, have at least 1 item, and each item (UID) must be present (not empty string)
+	PermissionLevel string   `json:"permissionLevel" binding:"required,oneof=read write"` // Must be 'read' or 'write'
 }
 
 // CreateSecretRequest represents the request body for creating a new secret.
 type CreateSecretRequest struct {
 	Name  string `json:"name" binding:"required"`
 	Type  string `json:"type" binding:"required"`  // e.g., "secret", "certificate", "key_value"
-	Value string `json:"value" binding:"required"` // Plain text value
-	// ExpiresAt *time.Time `json:"expiresAt,omitempty"` // To be handled by models.Secret.ExpiresAt directly if needed
+	Value string `json:"value" binding:"required"` // Plain text value; content validation (e.g. length) could be added with "validate"
+	// ExpiresAt *time.Time `json:"expiresAt,omitempty"` // Optional, handled by models.Secret field directly
 }
 
 // UpdateSecretRequest represents the request body for updating an existing secret.

@@ -247,7 +247,7 @@ func (h *VaultHandler) ShareVault(c *gin.Context) {
 
 // UpdateShareRequest defines the expected request body for updating share permissions.
 type UpdateShareRequest struct {
-	PermissionLevel string `json:"permissionLevel" binding:"required"`
+	PermissionLevel string `json:"permissionLevel" binding:"required,oneof=read write"`
 }
 
 // UpdateShare handles PUT /vaults/:vaultId/share/:targetUserId

@@ -54,6 +54,8 @@ func NewVaultService(
 
 // checkVaultLimit is a helper function to check if a user can create more vaults based on their plan.
 // This is a conceptual implementation. Actual plan details might come from config or database.
+// TODO: Plan limits are currently hardcoded. These should be made configurable
+// (e.g., via application config or a dedicated plans management system).
 func (s *vaultService) checkVaultLimit(userPlan string, currentVaultCount int) error {
 	// These limits should ideally be configurable (e.g., via config.Config)
 	// and not hardcoded.

@@ -74,14 +74,17 @@ func (s *secretService) checkVaultAccess(ctx context.Context, userID, vaultID st
 
 	vault, err := s.vaultRepo.GetByID(ctx, vaultID)
 	if err != nil {
-		// Assuming GetByID returns a specific error for not found, e.g., db.ErrVaultNotFound
-		// For now, wrap it.
-		return nil, fmt.Errorf("failed to retrieve vault '%s': %w", vaultID, err)
+		if errors.Is(err, db.ErrNotFound) { // Check if the error from repo is db.ErrNotFound
+			return nil, fmt.Errorf("%w: vault '%s' during access check", ErrVaultNotFound, vaultID) // Return core.ErrVaultNotFound
+		}
+		return nil, fmt.Errorf("failed to retrieve vault '%s' for access check: %w", vaultID, err) // Wrap other errors
 	}
+	// vault should not be nil if err is nil and repo adheres to contract (returns ErrNotFound if not found)
+	// However, an explicit check is safer if repo contract is not strictly guaranteed.
 	if vault == nil {
-		// This path should ideally be covered if GetByID returns a specific ErrNotFound
-		return nil, ErrVaultNotFound // Using error from vault_service for consistency
+		return nil, fmt.Errorf("%w: vault '%s' (retrieved nil vault with nil error)", ErrVaultNotFound, vaultID)
 	}
+
 
 	if vault.OwnerID == userID {
 		return vault, nil // Owner has all permissions
@@ -89,7 +92,7 @@ func (s *secretService) checkVaultAccess(ctx context.Context, userID, vaultID st
 
 	permission, ok := vault.SharedWith[userID]
 	if !ok {
-		return nil, fmt.Errorf("%w: user '%s' does not have access to vault '%s'", ErrForbiddenAccess, userID, vaultID)
+		return nil, fmt.Errorf("%w: user '%s' for vault '%s'", ErrForbiddenAccess, userID, vaultID)
 	}
 
 	// Check if the granted permission is sufficient for the required action

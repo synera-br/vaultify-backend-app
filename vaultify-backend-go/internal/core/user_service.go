@@ -14,6 +14,10 @@ import (
 	// In a real implementation, db.ErrNotFound would be a typed error.
 )
 
+// ErrUserNotFound is returned when a user is not found.
+var ErrUserNotFound = errors.New("user not found")
+
+
 // userService implements the UserService interface.
 type userService struct {
 	userRepo db.UserRepository
@@ -35,22 +39,10 @@ func (s *userService) GetOrCreate(ctx context.Context, userID, email, displayNam
 
 	user, err := s.userRepo.GetByID(ctx, userID)
 	if err != nil {
-		// TODO: Replace this string check with errors.Is(err, db.ErrNotFound) when db.ErrNotFound is defined.
-		// This is a temporary placeholder to simulate checking for a 'not found' error.
-		// A truly robust solution depends on the repository implementation of error reporting.
-		isNotFoundError := false
-		// Example of how a repository might return a specific error string (not ideal, typed errors are better)
-		// We simulate this by checking if the error message *is* a specific "not found" message.
-		// In a real scenario, db.ErrNotFound would be a specific error variable or type.
-		// For instance: if errors.Is(err, db.ErrUserNotFoundFromRepository)
-		if err.Error() == fmt.Sprintf("user with ID '%s' not found in repository", userID) { // SIMULATED CHECK
-			isNotFoundError = true
-		}
-
-		if isNotFoundError {
+		if errors.Is(err, db.ErrNotFound) {
 			// User not found, create a new one
 			newUser := &models.User{
-				ID:          userID,
+				ID:          userID, // User ID from Firebase Auth is the document ID
 				Email:       email,
 				DisplayName: displayName,
 				PhotoURL:    photoURL,
@@ -95,18 +87,19 @@ func (s *userService) GetByID(ctx context.Context, userID string) (*models.User,
 	}
 	user, err := s.userRepo.GetByID(ctx, userID)
 	if err != nil {
-		// TODO: Replace this string check with errors.Is(err, db.ErrNotFound) when db.ErrNotFound is defined.
-		// This is a temporary placeholder to simulate checking for a 'not found' error.
-		// Example: if errors.Is(err, db.ErrUserNotFoundFromRepository)
-		if err.Error() == fmt.Sprintf("user with ID '%s' not found in repository", userID) { // SIMULATED CHECK
-			return nil, fmt.Errorf("user with ID '%s' not found", userID) // Return a clear "not found" error
+		if errors.Is(err, db.ErrNotFound) {
+			// It's important that ErrUserNotFound is defined in this package or a shared core errors package.
+			// For now, let's assume it's defined in this (core) package, similar to how VaultService defines its errors.
+			// If not, use fmt.Errorf("user with ID '%s' not found: %w", userID, db.ErrNotFound)
+			// or return db.ErrNotFound directly if appropriate for the service layer.
+			return nil, fmt.Errorf("%w: user with ID '%s'", ErrUserNotFound, userID)
 		}
 		return nil, fmt.Errorf("failed to get user by ID '%s' from repository: %w", userID, err)
 	}
 	if user == nil {
-		// This implies repository returned (nil, nil) which is bad practice for GetByID.
-		// It should return an error if not found.
-		return nil, fmt.Errorf("user with ID '%s' not found (repository returned nil user, nil error; expected error on not found)", userID)
+		// This case should ideally not be reached if repositories correctly return ErrNotFound.
+		// If it is, it indicates an issue with the repository's error handling.
+		return nil, fmt.Errorf("%w: user with ID '%s' (repository returned nil user and nil error)", ErrUserNotFound, userID)
 	}
 	return user, nil
 }

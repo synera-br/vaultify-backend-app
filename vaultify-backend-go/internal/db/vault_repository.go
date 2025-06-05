@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors" // Added for errors.New
 	"fmt"
 	"log"
 	"strconv" // For parsing pagination params

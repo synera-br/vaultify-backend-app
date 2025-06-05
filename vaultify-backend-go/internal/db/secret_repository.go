@@ -201,10 +201,12 @@ func (r *firestoreSecretRepository) DeleteByVaultID(ctx context.Context, vaultID
 	}
 
 	bulkWriter.Flush() // Commit all enqueued operations. Important to call this.
-	// bulkWriter.End() can also be used, which calls Flush and waits for all writes.
+	// bulkWriter.End() can also be used, which calls Flush and waits for all writes. After flushing, check for errors.
 
 	if len(errorMessages) > 0 {
-		return fmt.Errorf("encountered errors during bulk deletion of secrets in vault '%s': %s", vaultID, errors.Join(fmt.Errorf(errorMessages[0]), fmt.Errorf(errorMessages[1:]...)))
+		// Join the collected error messages into a single string.
+		// This provides a summary of errors encountered during the bulk delete.
+		return fmt.Errorf("encountered one or more errors during bulk deletion of secrets in vault '%s': %s", vaultID, strings.Join(errorMessages, "; "))
 	}
 
 	log.Printf("Successfully deleted %d secrets from vault '%s'", len(docsToDelete), vaultID)

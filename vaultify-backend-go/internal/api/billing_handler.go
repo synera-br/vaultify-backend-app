@@ -30,8 +30,8 @@ func NewBillingHandler(bs core.BillingService /*, appConfig *config.Config */) *
 
 // CreateCheckoutSessionRequest defines the structure for creating a Stripe Checkout session.
 type CreateCheckoutSessionRequest struct {
-	PlanID  string `json:"planId" binding:"required"`  // Your internal plan identifier (e.g., "pro", "enterprise")
-	PriceID string `json:"priceId" binding:"required"` // The Stripe Price ID (e.g., price_xxxxxxxxxxxxxx)
+	PlanID  string `json:"planId" binding:"required"`
+	PriceID string `json:"priceId" binding:"required"`
 }
 
 // --- Response DTOs ---
