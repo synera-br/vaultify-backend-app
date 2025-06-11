@@ -1,0 +1,34 @@
+name: Go Lint
+run-name: golang-lint
+
+on:
+  push:
+    branches:
+      - "*"
+    paths:
+      - '**.go'
+  pull_request:
+
+permissions:
+  contents: read
+  # Optional: allow read access to pull requests. Use with `only-new-issues` option.
+  # pull-requests: read
+
+jobs:
+  golangci:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - name: gofmt
+        uses: Jerome1337/gofmt-action@v1.0.5
+        with:
+          gofmt-path: './'
+          gofmt-flags: '-l -d'
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.1
